@@ -40,13 +40,13 @@ async function onInputFile(event: InputEvent) {
     console.log(file.name);
 
     try {
-        // const a = await y.decodeFile(file);
+        const a = await y.decodeFile(file);
 
         // y.downloadJson(a, 'save.json')
 
-        const b = await y.encodeFile(file);
+        // const b = await y.encodeFile(file);
 
-        y.downloadFile(b, 'save5.hg')
+        // y.downloadFile(b, 'save5.hg')
 
         // const resultData = await nmsSaveTool.convertFile(file);
 
@@ -63,10 +63,10 @@ async function onInputFile(event: InputEvent) {
     
         // if (decompressedSave instanceof Error) throw decompressedSave;
 
-        // $emit('upload', {
-        //     file,
-        //     data: resultData.data as any //jsonObject// decompressedSave as SaveTopLevel
-        // });
+        $emit('upload', {
+            file,
+            data: JSON.parse(a) as any //jsonObject// decompressedSave as SaveTopLevel
+        });
 
         // $localSave.setFile(file);
         // $localSave.setData(decompressedSave as any);

@@ -1,5 +1,3 @@
-import wasm from 'vite-plugin-wasm';
-
 import { languages, type CodeName } from './types/locale';
 
 
@@ -8,12 +6,6 @@ export default defineNuxtConfig({
     runtimeConfig: {},
 
     css: ['~/assets/styles/root.scss'],
-    
-    vite: {
-        plugins: [
-            wasm()
-        ]
-    },
 
     modules: [
         '@pinia/nuxt',

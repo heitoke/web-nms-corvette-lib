@@ -5,12 +5,12 @@
 
             <p>D</p>
 
-            <Button variant="outline" v-for="({ name, logoUrl }, key) in providers" :key="key"
+            <UIButton v-for="({ name, logoUrl }, key) in providers" :key="key"
                 @click="signInWithOAuth(key)"
             >
                 <img :src="logoUrl" alt="Logo Provider">
                 <span>{{ name }}</span>
-            </Button>
+            </UIButton>
         </main>
     </div>
 </template>
@@ -53,10 +53,10 @@ async function signInWithOAuth(provider: ProviderName) {
 .page.login {
     display: flex;
     width: 100%;
-    height: calc(100vh - 128px);
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
+    background-color: #000;
 
     main {
         display: flex;

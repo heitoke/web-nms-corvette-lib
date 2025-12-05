@@ -1,8 +1,7 @@
 import M from '~/assets/mapping.json'
 import * as lz4js from 'lz4js';
-import { Buffer } from 'node:buffer';
 
-console.log(Buffer.alloc)
+// console.log(Buffer.alloc)
 
 type Mapping = { Key: string; Value: string };
 
@@ -186,27 +185,43 @@ export function decompress(data: Uint8Array): Uint8Array {
 
 // ==================== Маппинг ключей ====================
 
+let hashSize = 1 << 16;
 async function compress(data: Uint8Array): Promise<Uint8Array> {
   const size = data.length;
   let offset = 0;
   const outChunks: Uint8Array[] = [];
   
   const blockSize = 0x80000;
-  const hashTable = new Int32Array(65536);
+//   const hashTable = new Int32Array(65536);
   while (offset < size) {
     const uncompressedSize = Math.min(blockSize, size - offset);
     const uncompressedBlock = data.slice(offset, offset + uncompressedSize);
     offset += uncompressedSize;
+
+    const compressed = new ArrayBuffer(lz4js.compressBound(uncompressedSize));
+    var hashTable = new Array(hashSize)
+	for (var i = 0; i < hashSize; i++) {
+		hashTable[i] = 0
+	}
+    let t =  new Uint8Array(compressed);
+    const compressedSize = lz4js.compressBlock(uncompressedBlock, t, 0, t.length, hashTable);
+    const compressedBlock = t.slice(0, compressedSize);
+
+    outChunks.push(byte4(0xfeeda1e5));
+    outChunks.push(byte4(compressedSize));
+    outChunks.push(byte4(uncompressedSize));
+    outChunks.push(byte4(0));
+    outChunks.push(compressedBlock);
     
-    let compressedBlock: Uint8Array;
-    let compressedSize: number;
+    // let compressedBlock: Uint8Array;
+    // let compressedSize: number;
     
     
       // Браузерная версия
-      const maxSize = lz4js.compressBound(uncompressedSize);
-      const compressed = new Uint8Array(maxSize);
-      compressedSize = lz4js.compressBlock(uncompressedBlock, compressed, 0, size, hashTable);
-      compressedBlock = compressed.slice(0, compressedSize);
+    //   const maxSize = lz4js.compressBound(uncompressedSize);
+    //   const compressed = new Uint8Array(maxSize);
+    //   compressedSize = lz4js.compressBlock(uncompressedBlock, compressed, 0, size, hashTable);
+    //   compressedBlock = compressed.slice(0, compressedSize);
     
     // } else if (typeof require !== 'undefined') {
     //   // Node.js версия
@@ -219,25 +234,33 @@ async function compress(data: Uint8Array): Promise<Uint8Array> {
     //   throw new Error("LZ4 library not available");
     // }
     
-    const header = new Uint8Array(16);
-    header.set(byte4(0xfeeda1e5), 0);
-    header.set(byte4(compressedSize), 4);
-    header.set(byte4(uncompressedSize), 8);
-    header.set(byte4(0), 12);
+    // const header = new Uint8Array(16);
+    // header.set(byte4(0xfeeda1e5), 0);
+    // header.set(byte4(compressedSize), 4);
+    // header.set(byte4(uncompressedSize), 8);
+    // header.set(byte4(0), 12);
     
-    outChunks.push(header);
-    outChunks.push(compressedBlock);
+    // outChunks.push(header);
+    // outChunks.push(compressedBlock);
   }
   
-  const totalSize = outChunks.reduce((sum, chunk) => sum + chunk.length, 0);
-  const result = new Uint8Array(totalSize);
-  let pos = 0;
+//   const totalSize = outChunks.reduce((sum, chunk) => sum + chunk.length, 0);
+//   const result = new Uint8Array(totalSize);
+//   let pos = 0;
+//   for (const chunk of outChunks) {
+//     result.set(chunk, pos);
+//     pos += chunk.length;
+//   }
+  const totalLength = outChunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const combinedArray = new Uint8Array(totalLength);
+
+  let currentOffset = 0;
   for (const chunk of outChunks) {
-    result.set(chunk, pos);
-    pos += chunk.length;
+    combinedArray.set(chunk, currentOffset);
+    currentOffset += chunk.length;
   }
-  
-  return result;
+
+  return combinedArray;
 }
 
 function mapKeys(json: any, mapping: Mapping[]): any {

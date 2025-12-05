@@ -19,7 +19,7 @@
 
 import DecoderLocalSave from '~/components/editor/Decoder.vue';
 
-import nmsSaveTool from '~/lib/nms-save-tool';
+import * as nmsSaveTool from '~/lib/nms-save-tool';
 
 import { Mapping } from '~/assets/mapping.json';
 
@@ -55,7 +55,7 @@ async function fetchCorvetteData() {
 
     if (!data) return null;
 
-    return data?.data as ICorvette;
+    return (data as any)?.data as ICorvette;
 }
 
 function onInsertClick() {
@@ -98,7 +98,7 @@ function onInsertClick() {
 // }
 
 
-function downloadFile(buffer: Buffer, filename: string) {
+function downloadFile(buffer: any, filename: string) {
     const blob = new Blob([buffer], { type: 'application/octet-stream' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -134,7 +134,7 @@ async function onInsertCorvette({ file, data }: { file: File, data: SaveTopLevel
 
     data.BaseContext.PlayerStateData.TimeStamp = Math.floor(Date.now() / 1000);
 
-    const resultData = await nmsSaveTool.processFile(file);
+    // const resultData = await nmsSaveTool.processFile(file);
 
     // const json = reverseMapKeys(data, Mapping);
     // const sJson = JSON.stringify(data, null, 4);
@@ -146,8 +146,12 @@ async function onInsertCorvette({ file, data }: { file: File, data: SaveTopLevel
     // const text = JSON.stringify(data)
     // const hgBuffer = await nmsSaveTool.encode(text);
       
-    // // Скачиваем результат как .hg файл
+    // // // Скачиваем результат как .hg файл
     // downloadFile(hgBuffer, file.name);
+
+    const b = await nmsSaveTool.encode(JSON.stringify(data));
+
+    nmsSaveTool.downloadFile(b, 'save5.hg')
 }
 
 
