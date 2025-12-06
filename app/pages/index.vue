@@ -1,13 +1,13 @@
 <template>
     <main class="home">
-        <div class="background-media">
+        <!-- <div class="background-media">
             <iframe src="https://player.vimeo.com/video/1113551383?autoplay=1&amp;background=1&amp;loop=1&amp;autopause=0" frameborder="0" webkitallowfullscreen="" mozallowfullscreen="" allowfullscreen="allowfullscreen"></iframe>
-        </div>
+        </div> -->
 
         <div class="content">
             <h1>No Man's Sky Corvettes</h1>
 
-            <p>Welcome, this site was created so that what we are doing, because of the game No Man's Sky, could become the reason that we ourselves are corvettes.</p>
+            <p>Welcome! This site was created so that we could share our corvettes from our favorite game, No Man's Sky, and exchange experiences.</p>
         
             <NuxtLink to="/corvettes">
                 <UIButton>
