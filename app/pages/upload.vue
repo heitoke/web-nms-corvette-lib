@@ -99,13 +99,17 @@ async function uploadLocalCorvette() {
 
     if (!corvette) return;
 
-    const d = await $fetch('/api/corvettes', {
+    const corvetteData = await $fetch<{ id: number }>('/api/corvettes', {
         body: {
             ...corvetteInfo.value,
             data: corvette
         },
         method: 'POST'
     })
+
+    if (!corvetteData?.id) return;
+
+    await navigateTo('/corvettes');
 }
 
 </script>
