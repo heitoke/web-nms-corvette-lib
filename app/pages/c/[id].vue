@@ -25,7 +25,6 @@ import { Mapping } from '~/assets/mapping.json';
 
 // * Types
 import type { SaveTopLevel, ShipOwnership, PersistentPlayerBase } from '~~/types/editor/save';
-import { processSaveFile } from '~/lib/editor/a';
 
 interface ICorvette {
     ship: ShipOwnership;
@@ -35,8 +34,6 @@ interface ICorvette {
 
 
 const $route = useRoute();
-
-const $user = useSupabaseUser();
 
 
 const corvette = ref<{ id: number, name: string, description?: string, created_at: number }>();
@@ -63,49 +60,51 @@ function onInsertClick() {
 }
 
 
-// function downloadFile(data: string, fileName: string) {
-//     const blob = new File([data], fileName, { type: 'application/json' });
-//     const url = URL.createObjectURL(blob);
-//     const a = document.createElement('a');
-//     a.href = url;
-//     a.download = fileName;
-//     a.click();
-//     URL.revokeObjectURL(url);
-// }
 
+async function uploadJson(jsonData: object, userId: string) {
+    const jsonString = JSON.stringify(jsonData);
+    
+    const blob = new Blob([jsonString], { type: 'application/json' });
 
+    const chunkSize = 1024 * 1024;
+    const totalChunks = Math.ceil(blob.size / chunkSize);
+    
+    for (let i = 0; i < totalChunks; i++) {
+        const start = i * chunkSize;
+        const end = Math.min(start + chunkSize, blob.size);
+        const chunk = blob.slice(start, end);
 
-// const reverseMapKeys = (json: object, mapping: typeof Mapping) => {
-//     if (Array.isArray(json)) {
-//         return json.map((item) => reverseMapKeys(item, mapping));
-//     } else if (typeof json === 'object' && json !== null) {
-//         const newJson = {};
+        const formData = new FormData();
+        formData.append('file', chunk);
+        formData.append('chunkIndex', String(i));
+        formData.append('totalChunks', String(totalChunks));
+        formData.append('userId', userId);
 
-//         for (const key in json) {
-//             const mappedKey = mapping.find((m) => m.Value === key)?.Key;
+        const res = await fetch('https://nms-save-conversion-api.vercel.app/save/hg2', {
+            method: 'POST',
+            body: formData,
+        });
 
-//             if (mappedKey) {
-//                 newJson[mappedKey] = reverseMapKeys(json[key], mapping);
-//             } else {
-//                 newJson[key] = reverseMapKeys(json[key], mapping);
-//             }
-//         }
+        console.log('chunk', i, totalChunks, res);
 
-//         return newJson;
-//     } else {
-//         return json;
-//     }
-// }
+        if (res.ok && i === totalChunks - 1) {
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `save.hg`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            break;
+        } else if (!res.ok) {
+            console.error('Ошибка при отправке:', res.statusText);
+        }
+    }
 
-
-function downloadFile(buffer: any, filename: string) {
-    const blob = new Blob([buffer], { type: 'application/octet-stream' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+    console.log('JSON успешно загружен!');
 }
 
 async function onInsertCorvette({ file, data }: { file: File, data: SaveTopLevel }) {
@@ -134,24 +133,9 @@ async function onInsertCorvette({ file, data }: { file: File, data: SaveTopLevel
 
     data.BaseContext.PlayerStateData.TimeStamp = Math.floor(Date.now() / 1000);
 
-    // const resultData = await nmsSaveTool.processFile(file);
+    const json = await nmsSaveTool.applyMapping(data, Mapping)
 
-    // const json = reverseMapKeys(data, Mapping);
-    // const sJson = JSON.stringify(data, null, 4);
-
-    // downloadFile(sJson, file.name);
-
-    // console.log('new data', data)
-
-    // const text = JSON.stringify(data)
-    // const hgBuffer = await nmsSaveTool.encode(text);
-      
-    // // // Скачиваем результат как .hg файл
-    // downloadFile(hgBuffer, file.name);
-
-    const b = await nmsSaveTool.encode(JSON.stringify(data));
-
-    nmsSaveTool.downloadFile(b, 'save5.hg')
+    await uploadJson(json, String(corvette.value?.id))
 }
 
 

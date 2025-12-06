@@ -12,12 +12,7 @@
 
 import * as y from '~/lib/nms-save-tool';
 
-// * Types
-import { Mapping as mapping } from '~/assets/mapping.json';
 import type { SaveTopLevel } from '~~/types/editor/save';
-
-// * Stores
-// import { useLocalSaveStore } from '~/stores/localSave';
 
 
 const $emit = defineEmits({
@@ -25,10 +20,6 @@ const $emit = defineEmits({
         return data;
     }
 });
-
-
-// const $localSave = useLocalSaveStore();
-
 
 
 
@@ -42,34 +33,10 @@ async function onInputFile(event: InputEvent) {
     try {
         const a = await y.decodeFile(file);
 
-        // y.downloadJson(a, 'save.json')
-
-        // const b = await y.encodeFile(file);
-
-        // y.downloadFile(b, 'save5.hg')
-
-        // const resultData = await nmsSaveTool.convertFile(file);
-
-        // console.log(resultData)
-        // const arrayBuffer = await file.arrayBuffer();
-        // const buffer = Buffer.from(arrayBuffer);
-
-        // const jsonString = await nmsSaveTool.decode(buffer);
-        // const jsonObject = JSON.parse(jsonString);
-        // result.value = jsonObject;
-        
-
-        // const decompressedSave = (await decompressSave(file, mapping))
-    
-        // if (decompressedSave instanceof Error) throw decompressedSave;
-
         $emit('upload', {
             file,
-            data: JSON.parse(a) as any //jsonObject// decompressedSave as SaveTopLevel
+            data: JSON.parse(a) as any
         });
-
-        // $localSave.setFile(file);
-        // $localSave.setData(decompressedSave as any);
     } catch (error) {
         console.error(error);
     }
