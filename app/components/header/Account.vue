@@ -1,8 +1,14 @@
 <template>
     <div class="account">
         <div class="account" v-if="$user">
-            <div class="avatar">
+            <div class="avatar" @click="opened = !opened">
                 <img :src="$user.user_metadata?.avatar_url" alt="User Avatar"></img>
+            </div>
+
+            <div class="panel" v-if="opened">
+                <UIButton @click="signOut()">
+                    <span>Exit</span>
+                </UIButton>
             </div>
         </div>
 
@@ -18,6 +24,8 @@
 
 const $supabase = useSupabaseClient();
 const $user = useSupabaseUser();
+
+const opened = ref(false);
 
 async function signOut() {
     const { error } = await $supabase.auth.signOut();
@@ -49,6 +57,15 @@ async function signOut() {
             object-fit: cover;
             object-position: center;
         }
+    }
+
+    .panel {
+        padding: 12px;
+        position: absolute;
+        top: calc(42px + 8px);
+        right: 0;
+        border: 1px dashed #ffffff15;
+        background-color: #000;
     }
 }
 

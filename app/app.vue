@@ -14,8 +14,8 @@ import Header from '~/components/header/Index.vue';
 
 .page {
     padding-top: 64px;
-    padding-left: 10%;
-    padding-right: 10%;
+    padding-left: 20%;
+    padding-right: 20%;
     width: 100vw;
     height: 100vh;
     position: relative;

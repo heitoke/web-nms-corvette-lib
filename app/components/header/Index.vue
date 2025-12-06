@@ -23,7 +23,7 @@ import Account from './Account.vue';
 
 header {
     display: flex;
-    padding: 0 10%;
+    padding: 0 20%;
     margin: 0 auto;
     width: 100vw;
     height: 48px;

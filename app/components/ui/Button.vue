@@ -13,6 +13,7 @@ button.ui-button {
     padding: 10px 16px;
     position: relative;
     color: #fff;
+    white-space: nowrap;
     border: none;
     // border-left: 3px solid #fff;
     background-color: #ffffff25;

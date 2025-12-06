@@ -1,5 +1,9 @@
 <template>
     <main class="upload">
+        <h2>Upload Сorvettes</h2>
+
+        <p>First, select the save file from the No Man's Sky game.</p>
+
         <DecoderLocalSave
             @upload="onUploadLocalSave($event.data)"
         />
