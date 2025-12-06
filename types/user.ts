@@ -31,8 +31,8 @@ export const providers: Record<ProviderName, Provider> = {
         name: 'GitHub',
         logoUrl: 'https://github.githubassets.com/favicons/favicon-dark.png'
     },
-    // 'google': {
-    //     name: 'Google',
-    //     logoUrl: 'https://www.gstatic.com/images/branding/searchlogo/ico/favicon.ico'
-    // }
+    'google': {
+        name: 'Google',
+        logoUrl: 'https://www.gstatic.com/images/branding/searchlogo/ico/favicon.ico'
+    }
 };
