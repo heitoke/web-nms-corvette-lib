@@ -26,6 +26,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: #000;
 
     .background-media {
         width: 100%;
