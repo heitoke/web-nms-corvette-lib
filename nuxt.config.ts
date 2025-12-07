@@ -7,7 +7,8 @@ export default defineNuxtConfig({
     css: ['~/assets/styles/root.scss'],
 
     runtimeConfig: {
-        apiKeyPastebin: process.env.PASTEBIN_API_KEY
+        apiKeyPastebin: process.env.PASTEBIN_API_KEY,
+        apiKeyImgDB: process.env.IMGDB_API_KEY
     },
 
     modules: [

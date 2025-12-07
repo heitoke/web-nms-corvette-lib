@@ -12,16 +12,16 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusMessage: error.message });
     }
 
-    const res = await fetch(`https://pastebin.com/raw/${data[0]?.data}`);
+    // const res = await fetch(`https://pastebin.com/raw/${data[0]?.data}`);
 
-    if (!res?.ok) {
-        throw createError({ statusMessage: 'error' });
-    }
+    // if (!res?.ok) {
+    //     throw createError({ statusMessage: 'error' });
+    // }
 
-    const json = await res.json();
+    // const json = await res.json();
 
     return {
         id: data[0]?.id,
-        data: json
+        data: data[0]?.data
     };
 });

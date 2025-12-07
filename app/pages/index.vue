@@ -1,8 +1,11 @@
 <template>
     <main class="home">
-        <!-- <div class="background-media">
-            <iframe src="https://player.vimeo.com/video/1113551383?autoplay=1&amp;background=1&amp;loop=1&amp;autopause=0" frameborder="0" webkitallowfullscreen="" mozallowfullscreen="" allowfullscreen="allowfullscreen"></iframe>
-        </div> -->
+        <div class="background">
+            <video id="video-bg" preload="auto" autoplay loop muted playsinline>
+                <source src="~/assets/background_voyagers.mp4" type="video/mp4">
+                <source src="~/assets/background_voyagers.webm" type="video/webm">
+            </video>
+        </div>
 
         <div class="content">
             <h1>No Man's Sky Corvettes</h1>
@@ -18,7 +21,29 @@
     </main>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+
+
+function initVideo() {
+    const videoElement = document?.querySelector('.page.home video') as HTMLVideoElement;
+
+    if (!videoElement) return;
+    
+    videoElement.volume = 0;
+
+    videoElement.play().catch(err => {
+        console.log(`Error video play`, err);
+    });
+
+    videoElement.controls = false;
+    videoElement.removeAttribute('controls');
+}
+
+onMounted(() => {
+    initVideo();
+});
+
+</script>
 
 <style lang="scss" scoped>
 
@@ -28,7 +53,7 @@
     justify-content: center;
     background-color: #000;
 
-    .background-media {
+    .background {
         width: 100%;
         height: 100%;
         position: absolute;
@@ -49,15 +74,10 @@
             z-index: 2;
         }
 
-        iframe {
-            width: 100vw;
-            height: 120%;
-            position: absolute;
-            top: -64px;
-            left: 0;
-            // right: 0;
-            object-fit: contain;
-            -o-object-fit: contain;
+        video {
+            width: 100%;
+            object-fit: cover;
+            object-position: center;
         }
     }
 

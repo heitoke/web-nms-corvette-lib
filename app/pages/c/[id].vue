@@ -1,7 +1,20 @@
 <template>
     <main class="corvette">
         <h1>Corvette: {{ corvette?.name }}</h1>
+
+        <Slider :inset="true" :items="corvette?.images!" v-if="corvette?.images?.length && corvette?.images?.length > 0">
+            <template #item="{ item, index }">
+                <img :src="item?.url" alt="Corvette Image"></img>
+            </template>
+        </Slider>
+
         <p>{{ corvette?.description }}</p>
+
+        <div class="point">
+            <div>!</div>
+    
+            <span>Before using it, be sure to make a backup copy of your save to avoid unpleasant situations in the future.</span>
+        </div>
 
         <label>
             <UIButton
@@ -18,6 +31,7 @@
 <script lang="ts" setup>
 
 import DecoderLocalSave from '~/components/editor/Decoder.vue';
+import Slider from '~/components/Slider.vue';
 
 import * as nmsSaveTool from '~/lib/nms-save-tool';
 
@@ -36,7 +50,7 @@ interface ICorvette {
 const $route = useRoute();
 
 
-const corvette = ref<{ id: number, name: string, description?: string, created_at: number }>();
+const corvette = ref<{ id: number, name: string, images: Array<{ url: string, id: string }>, description?: string, created_at: number }>();
 
 
 async function fetchCorvette() {
@@ -153,6 +167,47 @@ onMounted(() => {
     h1 {
         font-family: 'GeosansLightNMS', Helvetica, Arial, sans-serif;
         font-weight: 100;
+    }
+
+    ::v-deep(.ui-slider) {
+        .slide:has(+ .slide.active) {
+            transform: translateX(-64px);
+        }
+        .slide.active + .slide {
+            transform: translateX(64px);
+        }
+    }
+
+    img {
+        max-width: 100%;
+        width: 100%;
+        min-height: 215px;
+        // height: 215px;
+        // max-height: 215px;
+        object-fit: cover;
+        object-position: center;
+        transition: .2s;
+        box-sizing: border-box;
+    }
+
+    .point {
+        display: flex;
+        margin: 12px 0;
+        
+        div {
+            display: flex;
+            margin-right: 12px;
+            width: 32px;
+            height: 32px;
+            font-size: 20px;
+            border: 1px dashed #fff;
+            align-items: center;
+            justify-content: center;
+        }
+
+        span {
+            margin-top: 7px;
+        }
     }
 }
 

@@ -5,27 +5,33 @@
         </header>
 
         <div class="bar">
-            <UIInput v-model:value="text"
+            <UIInput
                 placeholder="Search corvette"
+            
+                @update:model-value="onUpdateText"
             />
 
-            <NuxtLink to="upload">
+            <NuxtLink to="upload" v-if="$user">
                 <UIButton>
                     <span>Upload corvette</span>
                 </UIButton>
             </NuxtLink>
         </div>
 
-        <div class="list">
+        <div class="loading" v-if="loading">
+            <span>Please wait for the data to be uploaded...</span>
+        </div>
+
+        <div class="list" v-else-if="!loading && listCorvettes?.length > 0">
             <ul>
-                <NuxtLink v-for="(corvette, idx) of corvettes" :key="idx"
+                <NuxtLink v-for="(corvette, idx) of listCorvettes" :key="idx"
                     :to="`/c/${corvette.id}`"
                 >
                     <li>
                         <div class="banner">
                             <Slider :items="corvette?.images" v-if="corvette?.images?.length > 0">
                                 <template #item="{ item, index }">
-                                    <img :src="item" alt="Corvette Image"></img>
+                                    <img :src="item?.url" alt="Corvette Image"></img>
                                 </template>
                             </Slider>
 
@@ -40,6 +46,10 @@
                 </NuxtLink>
             </ul>
         </div>
+
+        <div class="void" v-else>
+            <span>So far, no one has decided to load their corvettes ☠️</span>
+        </div>
     </main>
 </template>
 
@@ -47,28 +57,47 @@
 
 import Slider from '~/components/Slider.vue';
 
-// * Types
-import type { ShipOwnership, PersistentPlayerBase } from '~~/types/editor/save';
-
 
 const $user = useSupabaseUser();
 
 
 const text = ref('');
-
+const loading = ref(false);
 const corvettes = ref<Array<{ id: number, name: string, description?: string, images: Array<string>, created_at: number }>>([]);
 
 
+const listCorvettes = computed(() => {
+    const regex = new RegExp(text.value.trim(), 'gi');
+
+    return corvettes.value?.filter(c => {
+        return regex.test(c?.name) || (c?.description && regex.test(c?.description));
+    });
+});
+
+
 async function fetchListCorvettes() {
+    loading.value = true;
+
     const data = await $fetch('/api/corvettes');
+
+    loading.value = false;
 
     corvettes.value = data;
 }
 
 
+let timer: NodeJS.Timeout;
+
+function onUpdateText(value: string) {
+    clearTimeout(timer);
+
+    timer = setTimeout(() => text.value = value, 500);
+}
+
+
 onMounted(() => {
     fetchListCorvettes();
-})
+});
 
 </script>
 
@@ -140,6 +169,7 @@ onMounted(() => {
 
                 img {
                     max-width: 100%;
+                    width: 100%;
                     min-height: 215px;
                     height: 215px;
                     max-height: 215px;
@@ -167,6 +197,16 @@ onMounted(() => {
                 }
             }
         }
+    }
+
+    .loading,
+    .void {
+        margin-top: 12px;
+        padding: 24px;
+        font-size: 18px;
+        text-align: center;
+        border: 1px dashed #ffffff25;
+        font-family: 'GeosansLightNMS', Helvetica, Arial, sans-serif;
     }
 }
 

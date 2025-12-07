@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
 
     console.log(corvetteId)
 
-    const { data, error } = await client.from('corvettes').select('id, name, description, created_at').eq('id', corvetteId!);
+    const { data, error } = await client.from('corvettes').select('id, name, images, description, created_at').eq('id', Number(corvetteId!));
 
     if (error) {
         throw createError({ statusMessage: error.message });

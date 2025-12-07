@@ -1,19 +1,19 @@
 <template>
-    <div class="ui-slider">
-        <div class="slider-button prev"
-            @click="setSlide(slideIndex - 1)"
+    <div :class="['ui-slider', { inset }]">
+        <div class="slider-button prev" v-show="items?.length > 0"
+            @click.stop.prevent="setSlide(slideIndex - 1)"
         ><</div>
 
         <div class="slides" :style="{ transform: `translateX(calc(${slideIndex} * -100%))` }">
             <template v-for="(item, index) in items" :key="index">
-                <div class="slide">
+                <div :class="['slide', { active: slideIndex === index }]">
                     <slot name="item" v-bind="{ item, index }"></slot>
                 </div>
             </template>
         </div>
 
-        <div class="slider-button next"
-            @click="setSlide(slideIndex + 1)"
+        <div class="slider-button next" v-show="items?.length > 0"
+            @click.stop.prevent="setSlide(slideIndex + 1)"
         >></div>
     </div>
 </template>
@@ -22,6 +22,7 @@
 
 const props = defineProps<{
     items: Array<any>;
+    inset?: boolean;
 }>();
 
 
@@ -53,6 +54,18 @@ div.ui-slider {
         }
     }
 
+    &.inset {
+        .slider-button {
+            &.prev {
+                transform: translateX(calc(-100% - 12px));
+            }
+
+            &.next {
+                transform: translateX(calc(100% + 12px));
+            }
+        }
+    }
+
     .slides {
         display: flex;
         max-width: 100%;
@@ -74,8 +87,9 @@ div.ui-slider {
         padding: 12px;
         position: absolute;
         top: 50%;
-        background: red;
+        background: #00000055;
         transition: .2s;
+        user-select: none;
         opacity: 0;
         z-index: 2;
     

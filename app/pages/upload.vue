@@ -29,6 +29,7 @@
                 >
                     <div class="name">{{ corvette.ship.Name }}</div>
                     <div class="size">Size: ~{{ corvette?.size }}</div>
+                    <div class="size">Objects: ~{{ corvette?.base?.Objects?.length - 1 }}</div>
                 </li>
             </ul>
         </section>
@@ -52,6 +53,22 @@
                 <UICheckbox text="Do you want your Corvette not to be shown in the general list?"
                     v-model:model-value="corvetteInfo.private"
                 />
+            </div>
+
+            <UIFile name="images" accept="image/png, image/jpeg" style="margin-top: 12px;"
+                :multiple="true"
+
+                @upload="onInputFiles"
+            />
+
+            <div class="images" v-if="images?.length > 0">
+                <div class="image" v-for="({ url }, idx) of images" :key="idx">
+                    <img :src="url" alt="Image">
+
+                    <div class="remove"
+                        @click="removeImage(idx)"
+                    >Remove</div>
+                </div>
             </div>
         </section>
 
@@ -87,6 +104,12 @@ const corvetteInfo = ref({
     name: '',
     description: ''
 });
+const images = ref<Array<{
+    index: number;
+    url: string;
+}>>([]);
+
+const dataImages: Array<File> = [];
 
 
 function getObjectSize(obj: object) {
@@ -106,8 +129,75 @@ function formatBytes(bytes: number, decimals = 2) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
 }
 
+async function uploadImages(corvetteId: number) {
+    const chunkSize = 1024 * 1024;
+
+    for (let i = 0; i < dataImages.length; i++) {
+        const file = dataImages[i];
+
+        if (!file) continue;
+
+        const blob = new Blob([file], { type: file.type });
+
+        const totalChunks = Math.ceil(blob.size / chunkSize);
+
+        for (let j = 0; j < totalChunks; j++) {
+            const start = j * chunkSize;
+            const end = Math.min(start + chunkSize, blob.size);
+            const chunk = blob.slice(start, end);
+
+            const formData = new FormData();
+            formData.append('chunk', chunk, file.name);
+
+            const data = await $fetch<{ id: number }>(`/api/corvettes/${corvetteId}/images?imageIndex=${i}&totalImages=${dataImages.length}&chunkIndex=${j}&totalChunks=${totalChunks}&state=corvette-${corvetteId}`, {
+                body: formData,
+                method: 'POST'
+            });
+
+            console.log(data);
+        }
+    }
+    
+    // for (let i = 0; i < totalChunks; i++) {
+    //     const start = i * chunkSize;
+    //     const end = Math.min(start + chunkSize, blob.size);
+    //     const chunk = blob.slice(start, end);
+
+    //     const formData = new FormData();
+    //     formData.append('file', chunk);
+    //     formData.append('imageIndex', String(i));
+    //     formData.append('totalImages', String(i));
+    //     formData.append('chunkIndex', String(i));
+    //     formData.append('totalChunks', String(totalChunks));
+    //     formData.append('state', `corvette-${corvetteId}`);
+
+    //     const res = await fetch('https://nms-save-conversion-api.vercel.app/save/hg2', {
+    //         method: 'POST',
+    //         body: formData,
+    //     });
+    //     // const formData = new FormData();
+
+    //     // for (const file of dataImages) {
+    //     //     const blob = new Blob([file], { type: file.type });
+            
+    //     //     // file.slice(0, file.size, file.type);
+    //     //     formData.append('images', blob, file.name);
+    //     // }
+
+    //     // const data = await $fetch<{ id: number }>(`/api/corvettes/${corvetteData?.id}/images`, {
+    //     //     body: formData,
+    //     //     method: 'POST'
+    //     // });
+
+    //     // console.log(data)
+
+    //     // if (!data?.id) return;
+    // }
+
+    return true;
+}
+
 function onUploadLocalSave(data: SaveTopLevel) {
-    console.log(data, data.BaseContext.PlayerStateData.ShipOwnership, data.BaseContext.PlayerStateData.PersistentPlayerBases);
     const ships = data.BaseContext.PlayerStateData.ShipOwnership;
     const bases = data.BaseContext.PlayerStateData.PersistentPlayerBases;
 
@@ -159,11 +249,38 @@ async function uploadLocalCorvette() {
             }
         },
         method: 'POST'
-    })
+    });
 
     if (!corvetteData?.id) return;
 
+    const resultImages = await uploadImages(corvetteData?.id);
+
+    if (!resultImages) return;
+
     await navigateTo('/corvettes');
+}
+
+async function onInputFiles(files: FileList) {
+    images.value = [];
+
+    for (const file of files) {
+        const index = dataImages.push(file);
+
+        images.value.push({
+            index,
+            url: URL.createObjectURL(file)
+        });
+    }
+}
+
+function removeImage(index: number) {
+    const image = images.value[index];
+
+    if (!image) return;
+
+    dataImages.splice(image.index, 1);
+
+    images.value.splice(index, 1);
 }
 
 </script>
@@ -231,6 +348,38 @@ async function uploadLocalCorvette() {
                     font-size: 12px;
                     opacity: .7;
                 }
+            }
+        }
+    }
+
+    .images {
+        display: grid;
+        margin-top: 12px;
+        position: relative;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
+
+        .image {
+            max-width: 100%;
+            position: relative;
+
+            img {
+                max-width: 100%;
+                object-fit: cover;
+                object-position: center;
+            }
+
+            .remove {
+                cursor: pointer;
+                padding: 8px;
+                position: absolute;
+                top: 0;
+                right: 0;
+                font-size: 12px;
+                font-weight: 600;
+                text-transform: uppercase;
+                background-color: #00000025;
+                user-select: none;
             }
         }
     }
