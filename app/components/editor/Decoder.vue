@@ -64,6 +64,7 @@ async function onInputFile(event: InputEvent & { target: HTMLInputElement }) {
     max-width: 100%;
     padding: 24px;
     border: 1px dashed #ffffff25;
+    box-sizing: border-box;
     transition: 0.2s;
 
     &:hover,

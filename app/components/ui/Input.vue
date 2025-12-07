@@ -24,6 +24,7 @@ label.ui-input {
     position: relative;
     padding: 10px 14px;
     border: 1px dashed #ffffff25;
+    box-sizing: border-box;
     transition: .2s;
 
     input {

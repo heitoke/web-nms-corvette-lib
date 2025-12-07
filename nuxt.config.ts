@@ -3,15 +3,24 @@ import { languages, type CodeName } from './types/locale';
 
 export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
-    runtimeConfig: {},
 
     css: ['~/assets/styles/root.scss'],
 
+    runtimeConfig: {
+        apiKeyPastebin: process.env.PASTEBIN_API_KEY
+    },
+
     modules: [
+        '@nuxtjs/supabase',
         '@pinia/nuxt',
-        '@nuxtjs/i18n',
-        '@nuxtjs/supabase'
+        '@nuxtjs/i18n'
     ],
+
+    vite: {
+        optimizeDeps: {
+            include: ['@supabase/supabase-js']
+        }
+    },
 
     components: [
         {

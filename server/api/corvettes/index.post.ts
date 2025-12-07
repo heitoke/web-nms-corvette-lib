@@ -7,7 +7,21 @@ export default defineEventHandler(async (event) => {
 
     const { private: privateMode, name, description, data: corvetteData } = await readBody(event) as { private?: boolean, name: string, description?: string, data: object };
 
-    console.log($user)
+    const apiKeyPastebin = useRuntimeConfig()?.apiKeyPastebin;
+
+    const res = await fetch('https://pastebin.com/api/api_post.php', {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `api_dev_key=${apiKeyPastebin}&api_paste_code=${encodeURIComponent(JSON.stringify(corvetteData))}&api_option=paste&api_paste_format=json&api_paste_private=1`,
+        method: 'POST'
+    });
+
+    const urlData = await res.text();
+
+    if (!/https|pastebin\.com/.test(urlData)) {
+        throw createError({ statusMessage: 'error' });
+    }
 
     const { data, error } = await client.from('corvettes')
         .upsert({
@@ -15,7 +29,7 @@ export default defineEventHandler(async (event) => {
             user_id: $user?.app_metadata?.public_id,
             name,
             description,
-            data: corvetteData
+            data: urlData.split('/').pop()
         })
         .select('id, name, description, created_at')
         .single();
