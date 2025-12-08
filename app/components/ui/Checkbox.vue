@@ -47,7 +47,10 @@ label.ui-checkbox {
         transition: .2s;
     }
 
-
+    span {
+        font-size: 12px;
+        opacity: .85;
+    }
 }
 
 </style>

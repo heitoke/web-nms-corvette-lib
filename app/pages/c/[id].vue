@@ -10,21 +10,66 @@
 
         <p>{{ corvette?.description }}</p>
 
-        <div class="point">
-            <div>!</div>
-    
-            <span>Before using it, be sure to make a backup copy of your save to avoid unpleasant situations in the future.</span>
-        </div>
+        <Point iconText="!" text="Before using it, be sure to make a backup copy of your save to avoid unpleasant situations in the future."/>
 
-        <label>
-            <UIButton
-                @click="onInsertClick"
-            >Transfer to your own save</UIButton>
+        <UIDialog v-if="!isExperienced">
+            <template #trigger="{ show }">
+                <UIButton @click="show">Transfer to your own save</UIButton>
+            </template>
 
-            <DecoderLocalSave style="display: none;" id="test"
+            <div>
+                <h1>Importing a Corvette into your game save</h1>
+
+                <Point iconText="1">
+                    <div>First you need to select your save file <b>(Be sure to make a backup copy of your save)</b></div>
+
+                    <p>You can find them in:</p>
+
+                    <ul style="list-style-type: disc; padding-left: 20px; padding-right: 30px; margin: 1em 0;">
+                        <li style="list-style-type: disc;">
+                            <p><b>Windows:</b> <i>C:\Users\[Username]\AppData\Roaming\HelloGames\NMS\</i></p>
+                            <p><b>Windows Microsoft Store:</b> <i>C:\Users\[Username]\AppData\Local\Packages\HelloGames.NoMansSky_bs190hzg1sesy\LocalState\SAVES\</i></p>
+                        </li>
+                        <li style="list-style-type: disc;">
+                            <p><b>Linux:</b> <i>/steamapps/compatdata/275850/pfx/</i> or <i>~/.steam/steam/userdata/[UserID]/275850/</i></p>
+                        </li>
+                        <li style="list-style-type: disc;">
+                            <p><b>MacOS:</b> <i>/Users/[Username]/Library/Application Support/HelloGames/NMS</i></p>
+                        </li>
+                    </ul>
+
+                    <p>After you have found the save file, save*.hg, drag it to the bottom field.</p>
+                </Point>
+                
+                <DecoderLocalSave style="padding: 12px;"
+                    @upload="onInsertCorvette"
+                />
+                
+                <Point iconText="2" text="Next, a corvette is inserted into your save file and the finished save file will be downloaded in a couple of seconds."/>
+                
+                <Point iconText="3" text="In the end, you will need to replace your save that you selected with the downloaded save."/>
+
+                <UICheckbox text="Don't show it anymore, I've learned!"
+                    :model-value="isExperienced"
+
+                    @update:model-value="setExperienced($event)"
+                />
+            </div>
+        </UIDialog>
+
+        <label v-else>
+            <UIButton @click="onInsertClick">Transfer to your own save</UIButton>
+
+            <DecoderLocalSave id="import-nms-save" style="display: none;"
                 @upload="onInsertCorvette"
             />
         </label>
+
+        <UIDialog :open="isLoading" :close-on-click-outside="false">
+            <div>
+                <span>Please wait.</span>
+            </div>
+        </UIDialog>
     </main>
 </template>
 
@@ -32,6 +77,7 @@
 
 import DecoderLocalSave from '~/components/editor/Decoder.vue';
 import Slider from '~/components/Slider.vue';
+import Point from '~/components/Point.vue';
 
 import * as nmsSaveTool from '~/lib/nms-save-tool';
 
@@ -49,6 +95,9 @@ interface ICorvette {
 
 const $route = useRoute();
 
+
+const isExperienced = ref(false);
+const isLoading = ref(false);
 
 const corvette = ref<{ id: number, name: string, images: Array<{ url: string, id: string }>, description?: string, created_at: number }>();
 
@@ -70,7 +119,7 @@ async function fetchCorvetteData() {
 }
 
 function onInsertClick() {
-    document.getElementById('test')?.click();
+    document.getElementById('import-nms-save')?.click();
 }
 
 
@@ -117,17 +166,14 @@ async function uploadJson(jsonData: object, userId: string) {
             console.error('Ошибка при отправке:', res.statusText);
         }
     }
-
-    console.log('JSON успешно загружен!');
 }
 
 async function onInsertCorvette({ file, data }: { file: File, data: SaveTopLevel }) {
+    isLoading.value = true;
+
     const copyData = await fetchCorvetteData();
 
     if (!copyData) return;
-
-    console.log(file, data, copyData)
-    console.log(data.BaseContext.PlayerStateData.ShipOwnership);
 
     const indexCopyCorvette = data.BaseContext.PlayerStateData.ShipOwnership.findIndex(s => {
         return !s.Resource.Filename;
@@ -138,8 +184,6 @@ async function onInsertCorvette({ file, data }: { file: File, data: SaveTopLevel
         Name: corvette.value?.name || copyData.ship?.Name
     });
 
-    console.log(indexCopyCorvette);
-
     data.BaseContext.PlayerStateData.PersistentPlayerBases.push({
         ...copyData.base,
         UserData: indexCopyCorvette
@@ -147,15 +191,27 @@ async function onInsertCorvette({ file, data }: { file: File, data: SaveTopLevel
 
     data.BaseContext.PlayerStateData.TimeStamp = Math.floor(Date.now() / 1000);
 
-    const json = await nmsSaveTool.applyMapping(data, Mapping)
+    const json = await nmsSaveTool.applyMapping(data, Mapping);
 
-    await uploadJson(json, String(corvette.value?.id))
+    const id = `import-corvette-${corvette.value?.id}-${Math.random()}`
+
+    await uploadJson(json, id);
+
+    isLoading.value = false;
 }
 
 
+function setExperienced(bool: boolean) {
+    isExperienced.value = bool;
+
+    localStorage.setItem('isExperienced', String(bool));
+}
+
 onMounted(() => {
+    isExperienced.value = Boolean(localStorage['isExperienced'] === 'true');
+
     fetchCorvette();
-})
+});
 
 </script>
 
@@ -188,26 +244,6 @@ onMounted(() => {
         object-position: center;
         transition: .2s;
         box-sizing: border-box;
-    }
-
-    .point {
-        display: flex;
-        margin: 12px 0;
-        
-        div {
-            display: flex;
-            margin-right: 12px;
-            width: 32px;
-            height: 32px;
-            font-size: 20px;
-            border: 1px dashed #fff;
-            align-items: center;
-            justify-content: center;
-        }
-
-        span {
-            margin-top: 7px;
-        }
     }
 }
 

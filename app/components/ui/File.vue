@@ -64,7 +64,15 @@ async function onInputFiles(event: InputEvent & { target: HTMLInputElement }) {
     box-sizing: border-box;
     transition: 0.2s;
 
-    &:hover,
+    &:hover {
+        border: 1px dashed #ffffff95;
+
+        .fake-btn {
+            border: 1px dashed #ffffff95;
+            background-color: #ffffff25;
+        }
+    }
+
     &.active {
         border: 1px solid #fff;
 
