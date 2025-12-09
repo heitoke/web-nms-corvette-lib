@@ -1,7 +1,9 @@
 <template>
     <main class="corvettes">
         <header>
-            <h2>List of corvettes</h2>
+            <h1>List of corvettes</h1>
+
+            <p>A place where people can share their corvettes</p>
         </header>
 
         <div class="bar">
@@ -107,7 +109,7 @@ onMounted(() => {
     background-color: #000;
 
     header {
-        h2 {
+        h1 {
             font-family: 'GeosansLightNMS', Helvetica, Arial, sans-serif;
             text-transform: uppercase;
         }

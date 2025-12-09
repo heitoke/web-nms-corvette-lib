@@ -6,7 +6,17 @@
             </div>
         </NuxtLink>
 
+        <NuxtLink to="/corvettes">
+            <div class="btn">
+                <span>List corvettes</span>
+            </div>
+        </NuxtLink>
+
         <div style="margin-left: auto;"></div>
+
+        <!-- <div>🔔</div>
+
+        <div>🛒</div> -->
 
         <Account/>
     </header>
@@ -70,6 +80,14 @@ a {
     &:hover {
         text-decoration: underline;
         opacity: 1;
+    }
+}
+
+.btn {
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
     }
 }
 

@@ -1,6 +1,11 @@
 <template>
     <Header/>
 
+    <ClientOnly>
+        <Notifications/>
+        <AutoSave/>
+    </ClientOnly>
+
     <NuxtPage class="page"/>
 
     <UIDialog :open="!isReadIt" :close-on-click-outside="false">
@@ -68,6 +73,8 @@
 <script lang="ts" setup>
 
 import Header from '~/components/header/Index.vue';
+import Notifications from '~/components/notifications/Index.vue';
+import AutoSave from './components/editor/AutoSave.vue';
 
 
 const isReadIt = ref(true);

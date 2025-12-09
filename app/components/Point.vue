@@ -28,7 +28,8 @@ const props = defineProps<{
     .icon {
         display: flex;
         margin-right: 12px;
-        width: 32px;
+        max-width: 32px;
+        min-width: 32px;
         height: 32px;
         font-size: 16px;
         border: 1px dashed #fff;

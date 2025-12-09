@@ -1,9 +1,9 @@
 <template>
     <div class="login">
         <main>
-            <h1>A</h1>
+            <h1>Authorization</h1>
 
-            <p>D</p>
+            <p>Log in through the app from the list to get more features on this site.</p>
 
             <UIButton v-for="({ name, logoUrl }, key) in providers" :key="key"
                 @click="signInWithOAuth(key)"
@@ -62,18 +62,12 @@ async function signInWithOAuth(provider: ProviderName) {
         display: flex;
         padding: 12px;
         width: 315px;
-        border-radius: 7px;
-        border: 1px solid var(--secondary);
+        border: 1px dashed #ffffff55;
         flex-direction: column;
         gap: 8px;
 
-        h1 {
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        p {
-            font-size: 14px;
+        h1, p {
+            text-align: center;
         }
     }
 

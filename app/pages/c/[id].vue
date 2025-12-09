@@ -12,7 +12,7 @@
 
         <Point iconText="!" text="Before using it, be sure to make a backup copy of your save to avoid unpleasant situations in the future."/>
 
-        <UIDialog v-if="!isExperienced">
+        <UIDialog v-if="!hasAutoSave && !isExperienced">
             <template #trigger="{ show }">
                 <UIButton @click="show">Transfer to your own save</UIButton>
             </template>
@@ -83,6 +83,8 @@ import * as nmsSaveTool from '~/lib/nms-save-tool';
 
 import { Mapping } from '~/assets/mapping.json';
 
+// * Stores
+
 // * Types
 import type { SaveTopLevel, ShipOwnership, PersistentPlayerBase } from '~~/types/editor/save';
 
@@ -93,6 +95,9 @@ interface ICorvette {
 
 
 
+const $localSave = useLocalSaveStore();
+
+
 const $route = useRoute();
 
 
@@ -100,6 +105,11 @@ const isExperienced = ref(false);
 const isLoading = ref(false);
 
 const corvette = ref<{ id: number, name: string, images: Array<{ url: string, id: string }>, description?: string, created_at: number }>();
+
+
+const hasAutoSave = computed(() => {
+    return Boolean($localSave?.fileSave?.name && $localSave?.fileSave?.handle && $localSave?.content);
+});
 
 
 async function fetchCorvette() {
@@ -118,13 +128,27 @@ async function fetchCorvetteData() {
     return (data as any)?.data as ICorvette;
 }
 
-function onInsertClick() {
-    document.getElementById('import-nms-save')?.click();
+async function onInsertClick() {
+    if ($localSave?.fileSave?.name && $localSave?.fileSave?.handle) {
+        const file = await $localSave?.fileSave?.handle?.getFile();
+        
+        if (!file) return;
+
+        const data = await nmsSaveTool.decodeFile(file);
+
+        if (!data) return;
+        
+        const json = JSON.parse(data);
+
+        await onInsertCorvette({ data: json }, true)
+    } else {
+        document.getElementById('import-nms-save')?.click();
+    }
 }
 
 
 
-async function uploadJson(jsonData: object, userId: string) {
+async function uploadJson(jsonData: object, userId: string, isAutoSave: boolean = false) {
     const jsonString = JSON.stringify(jsonData);
     
     const blob = new Blob([jsonString], { type: 'application/json' });
@@ -152,15 +176,20 @@ async function uploadJson(jsonData: object, userId: string) {
 
         if (res.ok && i === totalChunks - 1) {
             const blob = await res.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = `save.hg`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+
+            if (isAutoSave) {
+                await $localSave.saveFileSave(blob);
+            } else {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `save.hg`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }
             break;
         } else if (!res.ok) {
             console.error('Ошибка при отправке:', res.statusText);
@@ -168,7 +197,7 @@ async function uploadJson(jsonData: object, userId: string) {
     }
 }
 
-async function onInsertCorvette({ file, data }: { file: File, data: SaveTopLevel }) {
+async function onInsertCorvette({ data }: { data: SaveTopLevel }, isAutoSave: boolean = false) {
     isLoading.value = true;
 
     const copyData = await fetchCorvetteData();
@@ -195,7 +224,7 @@ async function onInsertCorvette({ file, data }: { file: File, data: SaveTopLevel
 
     const id = `import-corvette-${corvette.value?.id}-${Math.random()}`
 
-    await uploadJson(json, id);
+    await uploadJson(json, id, isAutoSave);
 
     isLoading.value = false;
 }

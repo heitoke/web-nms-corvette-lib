@@ -82,12 +82,15 @@ onMounted(() => {
     }
 
     .content {
+        display: flex;
         max-width: 512px;
         position: relative;
         color: #fff;
         font-family: 'GeosansLightNMS', Helvetica, Arial, sans-serif;
         font-weight: 100;
         text-align: center;
+        flex-direction: column;
+        align-items: center;
         z-index: 1;
 
         h1 {
@@ -95,6 +98,10 @@ onMounted(() => {
             padding: 0;
             font-weight: 100;
             font-size: 64px;
+        }
+
+        p {
+            font-size: 18px;
         }
     }
 }

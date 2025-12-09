@@ -157,6 +157,7 @@ function toggle(event: MouseEvent) {
 
     .content {
         padding: 12px;
+        max-width: clamp(315px, 50vw, 1280px);
         position: relative;
         border: 1px dashed #ffffff55;
         background-color: #000;

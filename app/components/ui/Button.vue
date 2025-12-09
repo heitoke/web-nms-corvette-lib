@@ -10,17 +10,20 @@
 
 button.ui-button {
     cursor: pointer;
+    display: flex;
     padding: 10px 16px;
     position: relative;
     color: #fff;
     white-space: nowrap;
     border: none;
-    // border-left: 3px solid #fff;
+    align-items: center;
+    justify-content: center;
     background-color: #ffffff25;
     backdrop-filter: blur(5px);
     transition: color .2s;
     overflow: hidden;
     outline: none;
+    gap: 8px;
 
     &:hover {
         color: #000;
